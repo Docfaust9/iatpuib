@@ -1,0 +1,90 @@
+---
+title: "Untitled"
+author: "a.zaitsev"
+date: "2022-11-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+starwars
+starwars<-starwars
+```
+## Task 1
+```{r}
+starwars %>% 
+  nrow()
+```
+## Task 2
+```{r}
+starwars %>% 
+  ncol()
+```
+##Task 3
+```{r}
+starwars %>% 
+  glimpse()
+```
+
+##Task 4
+```{r}
+starwars %>% 
+  select(species) %>%
+  na.omit() %>% 
+  distinct() 
+```
+
+##Task 5
+```{r}
+starwars %>% 
+  filter(height==max(na.omit(height)))
+```
+
+##Task 6
+```{r}
+starwars %>% 
+  filter(height<170)
+```
+
+##Task 7
+```{r}
+starwars %>% mutate(imt=mass/(height^2))
+```
+
+##Task 8
+```{r}
+starwars %>% 
+  mutate(vyt=mass/height) %>%
+  arrange(vyt) %>% 
+  slice(1:10)
+```
+
+##Task 9
+```{r}
+starwars %>% 
+  filter_at(vars(species, birth_year), all_vars(!is.na(.))) %>%
+  group_by(species) %>% 
+  summarise(mean_age = mean(birth_year), .groups = 'drop')
+
+```
+
+##Task 10
+```{r}
+starwars %>% 
+  filter(!is.na(eye_color)) %>%
+  count(eye_color, sort = TRUE) %>%
+  slice(1:1)
+  
+```
+
+##Task 11
+```{r}
+starwars %>% 
+  filter_at(vars(species, name), all_vars(!is.na(.))) %>%
+  group_by(species) %>% 
+  summarise(mean_name = mean(nchar(name)), .groups = 'drop')
+```
