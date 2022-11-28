@@ -1,0 +1,139 @@
+---
+title: "lab4"
+output: html_document
+date: "2022-11-23"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+install.packages('dplyr')
+install.packages('nycflights13')
+library(dplyr)
+library(nycflights13)
+
+```
+
+##Task 1
+```{r}
+df_package <- ls(package:nycflights13)
+df_package %>%
+  length
+```
+
+##Task2
+```{r}
+airlines <- nycflights13::airlines
+airports <- nycflights13::airports
+flights <- nycflights13::flights
+planes <- nycflights13::planes
+weather <- nycflights13::weather
+airlines %>% nrow() 
+airports %>% nrow()
+flights %>% nrow()
+planes %>% nrow()
+weather %>% nrow()
+```
+
+##Task 3
+```{r}
+airlines %>% ncol() 
+airports %>% ncol()
+flights %>% ncol()
+planes %>% ncol()
+weather %>% ncol()
+```
+
+##Task 4
+```{r}
+airlines %>% glimpse() 
+airports %>% glimpse() 
+flights %>% glimpse() 
+planes %>% glimpse() 
+weather %>% glimpse() 
+```
+
+##Task 5
+```{r}
+
+airlines %>%
+  select(carrier) %>%
+  distinct() %>%
+  count()
+
+```
+
+##Task 6
+```{r}
+
+a <- airports %>%
+  filter(name=='John F Kennedy Intl')%>%
+  select(faa)
+
+flights %>%
+  filter(!is.na(time_hour))%>%
+  filter(dest==a, time_hour >= as.POSIXct("2013-05-01 00:00:00", tz="UTC"), time_hour <= as.POSIXct("2013-05-31 24:59:59", tz="UTC")) %>%
+  count()
+
+```
+
+
+##Task 7
+```{r}
+airports %>%
+  filter(lat==max(lat))
+```
+
+
+##Task 8
+```{r}
+airports %>%
+  filter(lon==max(lon))
+```
+
+
+##Task 9
+```{r}
+planes %>%
+  filter(!is.na(year))%>%
+  filter(year==min(year))%>%
+  select(tailnum)
+```
+
+
+##Task 10
+```{r}
+a <- airports %>%
+  filter(name=='John F Kennedy Intl')%>%
+  select(faa)
+
+b<-weather %>%
+  filter(origin==a$faa, month==9)%>%
+  select(temp)
+
+5/9*(mean(b$temp)-32)
+```
+
+
+##Task 11
+```{r}
+flights%>%
+  filter(month==6)%>%
+  group_by(carrier)%>%
+  summarise(count_flights=length(flight), .groups = "drop")%>%
+  arrange(desc(count_flights))%>%
+  slice(1:1)
+```
+
+
+##Task 12
+```{r}
+flights
+
+flights%>%
+  filter(year==2013)%>%
+  filter(dep_delay>0)%>%
+  group_by(carrier)%>%
+  summarise(delay_times=length(flight), .groups = "drop")%>%
+  arrange(desc(delay_times))%>%
+  slice(1:1)
+```
