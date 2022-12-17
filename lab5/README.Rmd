@@ -1,0 +1,111 @@
+---
+title: "lab5"
+author: "Docfaust9"
+date: "2022-11-30"
+output: md_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+install.packages('dplyr')
+install.packages('stringr')
+```
+##Intro
+```{r}
+library(dplyr)
+library(stringr)
+```
+
+##Create and format data
+```{r}
+dns<-read.csv('dns.log',sep='\t')
+colnames(dns)<-c('timestamp', 'uid', 'source_ip', 'source_port', 'destination_ip', 'destination_port', 'protocol', 'trans_id', 'domain', 'qclass', 'qclass_name', 'qtype', 'qtype_name', 'rcode', 'rcode_name', 'QR', 'AA', 'TC.RD', 'RA', 'Z', 'answers', 'TTL', 'rejected')
+```
+
+
+##Task 1
+```{r}
+dest <- dns %>%
+  select(destination_ip) %>%
+  distinct()
+colnames(dest)=c('ip')
+
+src <- dns %>%
+  select(source_ip) %>%
+  distinct()
+colnames(src)=c('ip')
+
+all_ip<-union(src, dest)%>%
+  distinct()
+
+all_ip%>%
+  count()
+```
+
+
+##Task 2
+```{r}
+internal_ip <- all_ip%>%
+  filter(grepl("(192.168.)([0-9]{1,3}[.])[0-9]{1,3}|(10.0.)([0-9]{1,3}[.])[0-9]{1,3}|(100.64.)([0-9]{1,3}[.])[0-9]{1,3}|(172.16.)([0-9]{1,3}[.])[0-9]{1,3}", all_ip$ip))%>%
+  count()
+
+external_ip <- count(all_ip)-internal_ip
+
+internal_ip/external_ip
+```
+
+##Task 3
+```{r}
+sources <- dns %>% 
+  group_by(source_ip)%>%
+  summarise(count_ip = length(source_ip), .groups = 'drop')
+
+colnames(sources)<-c('ip', 'count_ip')
+
+destinations <- dns %>% 
+  group_by(destination_ip)%>%
+  summarise(count_ip = length(destination_ip), .groups = 'drop')
+
+colnames(destinations)<-c('ip', 'count_ip')
+
+all_ip_count <- union(sources, destinations)
+
+all_ip_count %>%
+  arrange(desc(count_ip))%>%
+  slice(1:10)
+```
+
+##Task 4
+```{r}
+domains<-dns %>%
+  filter(grepl('[a-z0-9]+(\\.[a-z0-9]+)*\\.[a-z]{2,5}', dns$domain)) %>%
+  group_by(domain)%>%
+  summarise(count_domain = length(domain), .groups = 'drop')%>%
+  arrange(desc(count_domain))%>%
+  slice(1:10)
+domains
+```
+
+##Task 5
+```{r}
+dns %>%
+  filter(domain == domains$domain)%>%
+  arrange(timestamp)%>%
+  mutate(time_diff = timestamp - lag(timestamp))%>%
+  select(time_diff)%>%
+  summary()
+```
+
+##Task 6
+```{r}
+dns %>%
+  group_by(destination_ip)%>%
+  arrange(destination_ip)%>%
+  summarise(counter_requests=length(destination_ip), counter_unique_sources=length(unique(source_ip)), .groups = 'drop')%>%
+  mutate(division = counter_requests/counter_unique_sources)%>%
+  arrange(desc(division))%>%
+  slice(1:10)
+```
